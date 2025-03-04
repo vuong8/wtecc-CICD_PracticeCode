@@ -1,0 +1,846 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    chains.tekton.dev/signed: 'true'
+    pipeline.openshift.io/started-by: 'system:serviceaccount:sn-labs-vuongnguyen:default'
+  resourceVersion: '2051817339'
+  name: ci-cd-pipeline-t85q3q
+  uid: b5300b06-6072-41f8-95ca-6e239b4a6435
+  creationTimestamp: '2025-03-04T15:36:48Z'
+  generation: 1
+  managedFields:
+    - apiVersion: tekton.dev/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:pipeline.openshift.io/started-by': {}
+          'f:labels':
+            .: {}
+            'f:tekton.dev/pipeline': {}
+        'f:spec':
+          .: {}
+          'f:params': {}
+          'f:pipelineRef':
+            .: {}
+            'f:name': {}
+          'f:status': {}
+          'f:workspaces': {}
+      manager: Mozilla
+      operation: Update
+      time: '2025-03-04T15:36:47Z'
+    - apiVersion: tekton.dev/v1beta1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            'f:chains.tekton.dev/signed': {}
+          'f:finalizers':
+            .: {}
+            'v:"chains.tekton.dev/pipelinerun"': {}
+      manager: openshift-pipelines-chains-controller
+      operation: Update
+      time: '2025-03-04T15:40:14Z'
+    - apiVersion: tekton.dev/v1beta1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          'f:childReferences': {}
+          'f:completionTime': {}
+          'f:conditions': {}
+          'f:pipelineSpec':
+            .: {}
+            'f:params': {}
+            'f:tasks': {}
+            'f:workspaces': {}
+          'f:startTime': {}
+      manager: openshift-pipelines-controller
+      operation: Update
+      subresource: status
+      time: '2025-03-04T15:40:14Z'
+  namespace: sn-labs-vuongnguyen
+  finalizers:
+    - chains.tekton.dev/pipelinerun
+  labels:
+    tekton.dev/pipeline: ci-cd-pipeline
+spec:
+  params:
+    - name: build-image
+      value: 'image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest'
+    - name: app-name
+      value: cicd-app
+  pipelineRef:
+    name: ci-cd-pipeline
+  taskRunTemplate:
+    serviceAccountName: pipeline
+  timeouts:
+    pipeline: 1h0m0s
+  workspaces:
+    - name: output
+      persistentVolumeClaim:
+        claimName: oc-lab-pvc
+status:
+  childReferences:
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: ci-cd-pipeline-t85q3q-cleanup
+      pipelineTaskName: cleanup
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: ci-cd-pipeline-t85q3q-git-clone
+      pipelineTaskName: git-clone
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: ci-cd-pipeline-t85q3q-flake8
+      pipelineTaskName: flake8
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: ci-cd-pipeline-t85q3q-nose
+      pipelineTaskName: nose
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: ci-cd-pipeline-t85q3q-buildah
+      pipelineTaskName: buildah
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      name: ci-cd-pipeline-t85q3q-deploy
+      pipelineTaskName: deploy
+  completionTime: '2025-03-04T15:40:14Z'
+  conditions:
+    - lastTransitionTime: '2025-03-04T15:40:14Z'
+      message: 'Tasks Completed: 6 (Failed: 0, Cancelled 0), Skipped: 0'
+      reason: Succeeded
+      status: 'True'
+      type: Succeeded
+  pipelineSpec:
+    params:
+      - default: 'image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest'
+        name: build-image
+        type: string
+      - default: cicd-app
+        name: app-name
+        type: string
+    tasks:
+      - name: cleanup
+        taskRef:
+          kind: Task
+          name: cleanup
+        workspaces:
+          - name: source
+            workspace: output
+        status:
+          completionTime: '2025-03-04T15:36:56Z'
+          conditions:
+            - lastTransitionTime: '2025-03-04T15:36:56Z'
+              message: All Steps have completed executing
+              reason: Succeeded
+              status: 'True'
+              type: Succeeded
+          podName: ci-cd-pipeline-t85q3q-cleanup-pod
+          startTime: '2025-03-04T15:36:48Z'
+          steps:
+            - container: step-remove
+              imageID: 'us.icr.io/docker-io/library/alpine@sha256:029a752048e32e843bd6defe3841186fb8d19a28dae8ec287f433bb9d6d1ad85'
+              name: remove
+              terminated:
+                containerID: 'cri-o://09752916c18e645677e029be57a16278cad3b15b136129ce658a79a844920096'
+                exitCode: 0
+                finishedAt: '2025-03-04T15:36:56Z'
+                reason: Completed
+                startedAt: '2025-03-04T15:36:55Z'
+          taskSpec:
+            description: This task will clean up a workspace by deleting all the files.
+            steps:
+              - computeResources: {}
+                env:
+                  - name: WORKSPACE_SOURCE_PATH
+                    value: /workspace/source
+                image: 'alpine:3'
+                name: remove
+                script: |
+                  #!/usr/bin/env sh
+                  set -eu
+                  echo "Removing all files from ${WORKSPACE_SOURCE_PATH} ..."
+                  # Delete any existing contents of the directory if it exists.
+                  #
+                  # We don't just "rm -rf ${WORKSPACE_SOURCE_PATH}" because ${WORKSPACE_SOURCE_PATH} might be "/"
+                  # or the root of a mounted volume.
+                  if [ -d "${WORKSPACE_SOURCE_PATH}" ] ; then
+                    # Delete non-hidden files and directories
+                    rm -rf "${WORKSPACE_SOURCE_PATH:?}"/*
+                    # Delete files and directories starting with . but excluding ..
+                    rm -rf "${WORKSPACE_SOURCE_PATH}"/.[!.]*
+                    # Delete files and directories starting with .. plus any other character
+                    rm -rf "${WORKSPACE_SOURCE_PATH}"/..?*
+                  fi
+                securityContext:
+                  runAsNonRoot: false
+                  runAsUser: 0
+                workingDir: /workspace/source
+            workspaces:
+              - name: source
+          duration: 8s
+          reason: Succeeded
+      - name: git-clone
+        params:
+          - name: url
+            value: 'https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode'
+          - name: revision
+            value: ''
+          - name: refspec
+            value: ''
+          - name: submodules
+            value: 'true'
+          - name: depth
+            value: '1'
+          - name: sslVerify
+            value: 'true'
+          - name: crtFileName
+            value: ca-bundle.crt
+          - name: subdirectory
+            value: ''
+          - name: sparseCheckoutDirectories
+            value: ''
+          - name: deleteExisting
+            value: 'true'
+          - name: httpProxy
+            value: ''
+          - name: httpsProxy
+            value: ''
+          - name: noProxy
+            value: ''
+          - name: verbose
+            value: 'true'
+          - name: gitInitImage
+            value: 'registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:aa2599a70c14b4f30c9959f6ddafc2510180764d9464e6e2ec5f2147a0a0bf80'
+          - name: userHome
+            value: /tekton/home
+        runAfter:
+          - cleanup
+        taskRef:
+          kind: ClusterTask
+          name: git-clone
+        workspaces:
+          - name: output
+            workspace: output
+        status:
+          completionTime: '2025-03-04T15:37:03Z'
+          conditions:
+            - lastTransitionTime: '2025-03-04T15:37:03Z'
+              message: All Steps have completed executing
+              reason: Succeeded
+              status: 'True'
+              type: Succeeded
+          podName: ci-cd-pipeline-t85q3q-git-clone-pod
+          results:
+            - name: commit
+              type: string
+              value: 7e8f777895388245fc877fd9ddf96ecca08c1242
+            - name: url
+              type: string
+              value: 'https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode'
+          startTime: '2025-03-04T15:36:57Z'
+          steps:
+            - container: step-clone
+              imageID: 'registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:0d6c3122476682db4ac5f2e4cfd8322d48673736535e37b128d55948457f33db'
+              name: clone
+              terminated:
+                containerID: 'cri-o://0216239b59f5fe7f465deef66f20329bd78ceea27458bcd138961e039bcb818c'
+                exitCode: 0
+                finishedAt: '2025-03-04T15:37:03Z'
+                message: '[{"key":"commit","value":"7e8f777895388245fc877fd9ddf96ecca08c1242","type":1},{"key":"url","value":"https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode","type":1}]'
+                reason: Completed
+                startedAt: '2025-03-04T15:37:02Z'
+          taskSpec:
+            description: |-
+              These Tasks are Git tasks to work with repositories used by other tasks in your Pipeline.
+              The git-clone Task will clone a repo from the provided url into the output Workspace. By default the repo will be cloned into the root of your Workspace. You can clone into a subdirectory by setting this Task's subdirectory param. This Task also supports sparse checkouts. To perform a sparse checkout, pass a list of comma separated directory patterns to this Task's sparseCheckoutDirectories param.
+            params:
+              - description: Repository URL to clone from.
+                name: url
+                type: string
+              - default: ''
+                description: 'Revision to checkout. (branch, tag, sha, ref, etc...)'
+                name: revision
+                type: string
+              - default: ''
+                description: Refspec to fetch before checking out revision.
+                name: refspec
+                type: string
+              - default: 'true'
+                description: Initialize and fetch git submodules.
+                name: submodules
+                type: string
+              - default: '1'
+                description: 'Perform a shallow clone, fetching only the most recent N commits.'
+                name: depth
+                type: string
+              - default: 'true'
+                description: Set the `http.sslVerify` global git config. Setting this to `false` is not advised unless you are sure that you trust your git remote.
+                name: sslVerify
+                type: string
+              - default: ca-bundle.crt
+                description: file name of mounted crt using ssl-ca-directory workspace. default value is ca-bundle.crt.
+                name: crtFileName
+                type: string
+              - default: ''
+                description: Subdirectory inside the `output` Workspace to clone the repo into.
+                name: subdirectory
+                type: string
+              - default: ''
+                description: Define the directory patterns to match or exclude when performing a sparse checkout.
+                name: sparseCheckoutDirectories
+                type: string
+              - default: 'true'
+                description: Clean out the contents of the destination directory if it already exists before cloning.
+                name: deleteExisting
+                type: string
+              - default: ''
+                description: HTTP proxy server for non-SSL requests.
+                name: httpProxy
+                type: string
+              - default: ''
+                description: HTTPS proxy server for SSL requests.
+                name: httpsProxy
+                type: string
+              - default: ''
+                description: Opt out of proxying HTTP/HTTPS requests.
+                name: noProxy
+                type: string
+              - default: 'true'
+                description: Log the commands that are executed during `git-clone`'s operation.
+                name: verbose
+                type: string
+              - default: 'registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:aa2599a70c14b4f30c9959f6ddafc2510180764d9464e6e2ec5f2147a0a0bf80'
+                description: The image providing the git-init binary that this Task runs.
+                name: gitInitImage
+                type: string
+              - default: /tekton/home
+                description: |
+                  Absolute path to the user's home directory.
+                name: userHome
+                type: string
+            results:
+              - description: The precise commit SHA that was fetched by this Task.
+                name: commit
+                type: string
+              - description: The precise URL that was fetched by this Task.
+                name: url
+                type: string
+            steps:
+              - computeResources: {}
+                env:
+                  - name: HOME
+                    value: /tekton/home
+                  - name: PARAM_URL
+                    value: 'https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode'
+                  - name: PARAM_REVISION
+                  - name: PARAM_REFSPEC
+                  - name: PARAM_SUBMODULES
+                    value: 'true'
+                  - name: PARAM_DEPTH
+                    value: '1'
+                  - name: PARAM_SSL_VERIFY
+                    value: 'true'
+                  - name: PARAM_CRT_FILENAME
+                    value: ca-bundle.crt
+                  - name: PARAM_SUBDIRECTORY
+                  - name: PARAM_DELETE_EXISTING
+                    value: 'true'
+                  - name: PARAM_HTTP_PROXY
+                  - name: PARAM_HTTPS_PROXY
+                  - name: PARAM_NO_PROXY
+                  - name: PARAM_VERBOSE
+                    value: 'true'
+                  - name: PARAM_SPARSE_CHECKOUT_DIRECTORIES
+                  - name: PARAM_USER_HOME
+                    value: /tekton/home
+                  - name: WORKSPACE_OUTPUT_PATH
+                    value: /workspace/output
+                  - name: WORKSPACE_SSH_DIRECTORY_BOUND
+                    value: 'false'
+                  - name: WORKSPACE_SSH_DIRECTORY_PATH
+                  - name: WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND
+                    value: 'false'
+                  - name: WORKSPACE_BASIC_AUTH_DIRECTORY_PATH
+                  - name: WORKSPACE_SSL_CA_DIRECTORY_BOUND
+                    value: 'false'
+                  - name: WORKSPACE_SSL_CA_DIRECTORY_PATH
+                image: 'registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:aa2599a70c14b4f30c9959f6ddafc2510180764d9464e6e2ec5f2147a0a0bf80'
+                name: clone
+                script: |
+                  #!/usr/bin/env sh
+                  set -eu
+
+                  if [ "${PARAM_VERBOSE}" = "true" ] ; then
+                    set -x
+                  fi
+
+
+                  if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
+                    cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
+                    cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
+                    chmod 400 "${PARAM_USER_HOME}/.git-credentials"
+                    chmod 400 "${PARAM_USER_HOME}/.gitconfig"
+                  fi
+
+                  if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
+                    cp -R "${WORKSPACE_SSH_DIRECTORY_PATH}" "${PARAM_USER_HOME}"/.ssh
+                    chmod 700 "${PARAM_USER_HOME}"/.ssh
+                    chmod -R 400 "${PARAM_USER_HOME}"/.ssh/*
+                  fi
+
+                  if [ "${WORKSPACE_SSL_CA_DIRECTORY_BOUND}" = "true" ] ; then
+                     export GIT_SSL_CAPATH="${WORKSPACE_SSL_CA_DIRECTORY_PATH}"
+                     if [ "${PARAM_CRT_FILENAME}" != "" ] ; then
+                        export GIT_SSL_CAINFO="${WORKSPACE_SSL_CA_DIRECTORY_PATH}/${PARAM_CRT_FILENAME}"
+                     fi
+                  fi
+                  CHECKOUT_DIR="${WORKSPACE_OUTPUT_PATH}/${PARAM_SUBDIRECTORY}"
+
+                  cleandir() {
+                    # Delete any existing contents of the repo directory if it exists.
+                    #
+                    # We don't just "rm -rf ${CHECKOUT_DIR}" because ${CHECKOUT_DIR} might be "/"
+                    # or the root of a mounted volume.
+                    if [ -d "${CHECKOUT_DIR}" ] ; then
+                      # Delete non-hidden files and directories
+                      rm -rf "${CHECKOUT_DIR:?}"/*
+                      # Delete files and directories starting with . but excluding ..
+                      rm -rf "${CHECKOUT_DIR}"/.[!.]*
+                      # Delete files and directories starting with .. plus any other character
+                      rm -rf "${CHECKOUT_DIR}"/..?*
+                    fi
+                  }
+
+                  if [ "${PARAM_DELETE_EXISTING}" = "true" ] ; then
+                    cleandir
+                  fi
+
+                  test -z "${PARAM_HTTP_PROXY}" || export HTTP_PROXY="${PARAM_HTTP_PROXY}"
+                  test -z "${PARAM_HTTPS_PROXY}" || export HTTPS_PROXY="${PARAM_HTTPS_PROXY}"
+                  test -z "${PARAM_NO_PROXY}" || export NO_PROXY="${PARAM_NO_PROXY}"
+
+                  git config --global --add safe.directory "${WORKSPACE_OUTPUT_PATH}"
+
+                  /ko-app/git-init \
+                    -url="${PARAM_URL}" \
+                    -revision="${PARAM_REVISION}" \
+                    -refspec="${PARAM_REFSPEC}" \
+                    -path="${CHECKOUT_DIR}" \
+                    -sslVerify="${PARAM_SSL_VERIFY}" \
+                    -submodules="${PARAM_SUBMODULES}" \
+                    -depth="${PARAM_DEPTH}" \
+                    -sparseCheckoutDirectories="${PARAM_SPARSE_CHECKOUT_DIRECTORIES}"
+                  cd "${CHECKOUT_DIR}"
+                  RESULT_SHA="$(git rev-parse HEAD)"
+                  EXIT_CODE="$?"
+                  if [ "${EXIT_CODE}" != 0 ] ; then
+                    exit "${EXIT_CODE}"
+                  fi
+                  printf "%s" "${RESULT_SHA}" > "/tekton/results/commit"
+                  printf "%s" "${PARAM_URL}" > "/tekton/results/url"
+                securityContext:
+                  runAsNonRoot: true
+                  runAsUser: 65532
+            workspaces:
+              - description: The git repo will be cloned onto the volume backing this Workspace.
+                name: output
+              - description: |
+                  A .ssh directory with private key, known_hosts, config, etc. Copied to
+                  the user's home before git commands are executed. Used to authenticate
+                  with the git remote when performing the clone. Binding a Secret to this
+                  Workspace is strongly recommended over other volume types.
+                name: ssh-directory
+                optional: true
+              - description: |
+                  A Workspace containing a .gitconfig and .git-credentials file. These
+                  will be copied to the user's home before any git commands are run. Any
+                  other files in this Workspace are ignored. It is strongly recommended
+                  to use ssh-directory over basic-auth whenever possible and to bind a
+                  Secret to this Workspace over other volume types.
+                name: basic-auth
+                optional: true
+              - description: |
+                  A workspace containing CA certificates, this will be used by Git to
+                  verify the peer with when fetching or pushing over HTTPS.
+                name: ssl-ca-directory
+                optional: true
+          duration: 6s
+          reason: Succeeded
+      - name: flake8
+        params:
+          - name: image
+            value: 'python:3.9-slim'
+          - name: path
+            value: .
+          - name: requirements_file
+            value: requirements.txt
+          - name: args
+            value:
+              - '--count'
+              - '--max-complexity=10'
+              - '--max-line-length=127'
+        runAfter:
+          - git-clone
+        taskRef:
+          kind: Task
+          name: flake8
+        workspaces:
+          - name: source
+            workspace: output
+        status:
+          completionTime: '2025-03-04T15:37:35Z'
+          conditions:
+            - lastTransitionTime: '2025-03-04T15:37:35Z'
+              message: All Steps have completed executing
+              reason: Succeeded
+              status: 'True'
+              type: Succeeded
+          podName: ci-cd-pipeline-t85q3q-flake8-pod
+          startTime: '2025-03-04T15:37:04Z'
+          steps:
+            - container: step-flake8
+              imageID: 'us.icr.io/docker-io/library/python@sha256:93ab151da4e5310ea79c4ecf306ece628262b86a4d7a49cc601664f19fe44e36'
+              name: flake8
+              terminated:
+                containerID: 'cri-o://e75f5b39323bb636ffc5f0d3a1637077907272f6265ec1a3ff6d1d3b14add08c'
+                exitCode: 0
+                finishedAt: '2025-03-04T15:37:34Z'
+                reason: Completed
+                startedAt: '2025-03-04T15:37:13Z'
+          taskSpec:
+            description: This task will run flake8 on the provided input.
+            params:
+              - default: 'docker.io/alpine/flake8@sha256:bb280bf2af4a434be912f25bbcb6c79ea4d735ed3c8e259f96c405998920871f'
+                description: The container image with flake8
+                name: image
+                type: string
+              - default: .
+                description: The path to the module which should be analysed by flake8
+                name: path
+                type: string
+              - default: requirements.txt
+                description: The name of the requirements file inside the source location
+                name: requirements_file
+                type: string
+              - default: []
+                description: The arguments to pass to the flake8 CLI.
+                name: args
+                type: array
+            steps:
+              - args:
+                  - '--count'
+                  - '--max-complexity=10'
+                  - '--max-line-length=127'
+                computeResources: {}
+                image: 'python:3.9-slim'
+                name: flake8
+                script: |
+                  export HOME=/tmp/python
+                  export PATH=$PATH:/tmp/python/.local/bin
+                  if [ -n "requirements.txt" ] && [ -e "requirements.txt" ];then
+                      python -mpip install --user -r requirements.txt
+                  fi
+                  flake8 $@ .
+                workingDir: /workspace/source
+            workspaces:
+              - name: source
+          duration: 31s
+          reason: Succeeded
+      - name: nose
+        params:
+          - name: args
+            value: '-v'
+        runAfter:
+          - flake8
+        taskRef:
+          kind: Task
+          name: nose
+        workspaces:
+          - name: source
+            workspace: output
+        status:
+          completionTime: '2025-03-04T15:38:08Z'
+          conditions:
+            - lastTransitionTime: '2025-03-04T15:38:08Z'
+              message: All Steps have completed executing
+              reason: Succeeded
+              status: 'True'
+              type: Succeeded
+          podName: ci-cd-pipeline-t85q3q-nose-pod
+          startTime: '2025-03-04T15:37:35Z'
+          steps:
+            - container: step-nosetests
+              imageID: 'us.icr.io/docker-io/library/python@sha256:93ab151da4e5310ea79c4ecf306ece628262b86a4d7a49cc601664f19fe44e36'
+              name: nosetests
+              terminated:
+                containerID: 'cri-o://4cf2ae39c04ad2e189eb3802035aa209600df782eaba0767d694e86f1dcd6d48'
+                exitCode: 0
+                finishedAt: '2025-03-04T15:38:07Z'
+                reason: Completed
+                startedAt: '2025-03-04T15:37:45Z'
+          taskSpec:
+            params:
+              - default: '-v'
+                description: Arguments to pass to nose
+                name: args
+                type: string
+            steps:
+              - computeResources: {}
+                image: 'python:3.9-slim'
+                name: nosetests
+                script: |
+                  #!/bin/bash
+                  set -e
+                  python -m pip install --upgrade pip wheel
+                  pip install -r requirements.txt
+                  nosetests -v
+                workingDir: /workspace/source
+            workspaces:
+              - name: source
+          duration: 33s
+          reason: Succeeded
+      - name: buildah
+        params:
+          - name: IMAGE
+            value: 'image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest'
+          - name: BUILDER_IMAGE
+            value: 'registry.redhat.io/rhel8/buildah@sha256:ac0b8714cc260c94435cab46fe41b3de0ccbc3d93e38c395fa9d52ac49e521fe'
+          - name: STORAGE_DRIVER
+            value: vfs
+          - name: DOCKERFILE
+            value: ./Dockerfile
+          - name: CONTEXT
+            value: .
+          - name: TLSVERIFY
+            value: 'true'
+          - name: FORMAT
+            value: oci
+          - name: BUILD_EXTRA_ARGS
+            value: ''
+          - name: PUSH_EXTRA_ARGS
+            value: ''
+          - name: SKIP_PUSH
+            value: 'false'
+        runAfter:
+          - nose
+        taskRef:
+          kind: ClusterTask
+          name: buildah
+        workspaces:
+          - name: source
+            workspace: output
+        status:
+          completionTime: '2025-03-04T15:40:04Z'
+          conditions:
+            - lastTransitionTime: '2025-03-04T15:40:04Z'
+              message: All Steps have completed executing
+              reason: Succeeded
+              status: 'True'
+              type: Succeeded
+          podName: ci-cd-pipeline-t85q3q-buildah-pod
+          results:
+            - name: IMAGE_DIGEST
+              type: string
+              value: 'sha256:2c34e898df431753828d01735b0d98ea4c65a743880962039fc3fb3e2a3fbd29'
+            - name: IMAGE_URL
+              type: string
+              value: |
+                image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest
+          startTime: '2025-03-04T15:38:08Z'
+          steps:
+            - container: step-build-and-push
+              imageID: 'registry.redhat.io/rhel8/buildah@sha256:7678ad61e06e442b0093ab73faa73ce536721ae523015dd942f9196c4699a31d'
+              name: build-and-push
+              terminated:
+                containerID: 'cri-o://f115a3d7cd9a8b3263dfbba25a8a34d1a4a301a32797da8ec519fe3a0f9e306d'
+                exitCode: 0
+                finishedAt: '2025-03-04T15:40:03Z'
+                message: '[{"key":"IMAGE_DIGEST","value":"sha256:2c34e898df431753828d01735b0d98ea4c65a743880962039fc3fb3e2a3fbd29","type":1},{"key":"IMAGE_URL","value":"image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest\n","type":1}]'
+                reason: Completed
+                startedAt: '2025-03-04T15:38:15Z'
+          taskSpec:
+            description: |-
+              Buildah task builds source into a container image and then pushes it to a container registry.
+              Buildah Task builds source into a container image using Project Atomic's Buildah build tool.It uses Buildah's support for building from Dockerfiles, using its buildah bud command.This command executes the directives in the Dockerfile to assemble a container image, then pushes that image to a container registry.
+            params:
+              - description: Reference of the image buildah will produce.
+                name: IMAGE
+                type: string
+              - default: 'registry.redhat.io/rhel8/buildah@sha256:ac0b8714cc260c94435cab46fe41b3de0ccbc3d93e38c395fa9d52ac49e521fe'
+                description: The location of the buildah builder image.
+                name: BUILDER_IMAGE
+                type: string
+              - default: vfs
+                description: Set buildah storage driver
+                name: STORAGE_DRIVER
+                type: string
+              - default: ./Dockerfile
+                description: Path to the Dockerfile to build.
+                name: DOCKERFILE
+                type: string
+              - default: .
+                description: Path to the directory to use as context.
+                name: CONTEXT
+                type: string
+              - default: 'true'
+                description: Verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
+                name: TLSVERIFY
+                type: string
+              - default: oci
+                description: 'The format of the built container, oci or docker'
+                name: FORMAT
+                type: string
+              - default: ''
+                description: Extra parameters passed for the build command when building images.
+                name: BUILD_EXTRA_ARGS
+                type: string
+              - default: ''
+                description: Extra parameters passed for the push command when pushing images.
+                name: PUSH_EXTRA_ARGS
+                type: string
+              - default: 'false'
+                description: Skip pushing the built image
+                name: SKIP_PUSH
+                type: string
+            results:
+              - description: Digest of the image just built.
+                name: IMAGE_DIGEST
+                type: string
+              - description: Image repository where the built image would be pushed to
+                name: IMAGE_URL
+                type: string
+            steps:
+              - computeResources: {}
+                image: 'registry.redhat.io/rhel8/buildah@sha256:ac0b8714cc260c94435cab46fe41b3de0ccbc3d93e38c395fa9d52ac49e521fe'
+                name: build-and-push
+                script: |
+                  buildah --storage-driver=vfs bud \
+                     --format=oci \
+                    --tls-verify=true --no-cache \
+                    -f ./Dockerfile -t image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest .
+
+                  [[ "false" == "true" ]] && echo "Push skipped" && exit 0
+
+                  if [[ "false" == "true" ]]; then
+
+                    # if config.json exists at workspace root, we use that
+                    if test -f "/config.json"; then
+                      export DOCKER_CONFIG=""
+
+                    # else we look for .dockerconfigjson at the root
+                    elif test -f "/.dockerconfigjson"; then
+                      cp "/.dockerconfigjson" "$HOME/.docker/config.json"
+                      export DOCKER_CONFIG="$HOME/.docker"
+
+                    # need to error out if neither files are present
+                    else
+                      echo "neither 'config.json' nor '.dockerconfigjson' found at workspace root"
+                      exit 1
+                    fi
+                  fi
+
+                  buildah --storage-driver=vfs push \
+                     --tls-verify=true \
+                    --digestfile /tmp/image-digest image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest \
+                    docker://image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest
+                  cat /tmp/image-digest | tee /tekton/results/IMAGE_DIGEST
+                  echo "image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest" | tee /tekton/results/IMAGE_URL
+                securityContext:
+                  capabilities:
+                    add:
+                      - SETFCAP
+                volumeMounts:
+                  - mountPath: /var/lib/containers
+                    name: varlibcontainers
+                workingDir: /workspace/source
+            volumes:
+              - emptyDir: {}
+                name: varlibcontainers
+            workspaces:
+              - name: source
+              - description: An optional workspace that allows providing a .docker/config.json file for Buildah to access the container registry. The file should be placed at the root of the Workspace with name config.json or .dockerconfigjson.
+                name: dockerconfig
+                optional: true
+          duration: 1m 56s
+          reason: Succeeded
+      - name: deploy
+        params:
+          - name: SCRIPT
+            value: 'oc create deployment cicd-app --image=image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest --dry-run=client -o yaml | oc apply -f -'
+          - name: VERSION
+            value: latest
+        runAfter:
+          - buildah
+        taskRef:
+          kind: ClusterTask
+          name: openshift-client
+        status:
+          completionTime: '2025-03-04T15:40:14Z'
+          conditions:
+            - lastTransitionTime: '2025-03-04T15:40:14Z'
+              message: All Steps have completed executing
+              reason: Succeeded
+              status: 'True'
+              type: Succeeded
+          podName: ci-cd-pipeline-t85q3q-deploy-pod
+          startTime: '2025-03-04T15:40:04Z'
+          steps:
+            - container: step-oc
+              imageID: 'image-registry.openshift-image-registry.svc:5000/openshift/cli@sha256:5a5527750e07a3bbc64e2b64fd712c12125b1e6f9e310124f6aea36684724d8f'
+              name: oc
+              terminated:
+                containerID: 'cri-o://aeb3fd2800c3b419deef1fad0fb59ace624129345e21ffda05b85a14b7397db5'
+                exitCode: 0
+                finishedAt: '2025-03-04T15:40:13Z'
+                reason: Completed
+                startedAt: '2025-03-04T15:40:11Z'
+          taskSpec:
+            description: |-
+              This task runs commands against the cluster provided by user and if not provided then where the Task is being executed.
+              OpenShift is a Kubernetes distribution from Red Hat which provides oc, the OpenShift CLI that complements kubectl for simplifying deployment and configuration applications on OpenShift.
+            params:
+              - default: oc help
+                description: The OpenShift CLI arguments to run
+                name: SCRIPT
+                type: string
+              - default: latest
+                description: The OpenShift Version to use
+                name: VERSION
+                type: string
+            steps:
+              - computeResources: {}
+                env:
+                  - name: HOME
+                    value: /tekton/home
+                image: 'image-registry.openshift-image-registry.svc:5000/openshift/cli:latest'
+                name: oc
+                script: |
+                  #!/usr/bin/env bash
+
+                  [[ "false" == "true" ]] && \
+                  cd 
+
+                  [[ "false" == "true" ]] && \
+                  [[ -f /kubeconfig ]] && \
+                  export KUBECONFIG=/kubeconfig
+
+                  oc create deployment cicd-app --image=image-registry.openshift-image-registry.svc:5000/sn-labs-vuongnguyen/tekton-lab:latest --dry-run=client -o yaml | oc apply -f -
+                securityContext:
+                  runAsNonRoot: true
+                  runAsUser: 65532
+            workspaces:
+              - description: The workspace which contains kubernetes manifests which we want to apply on the cluster.
+                name: manifest-dir
+                optional: true
+              - description: The workspace which contains the the kubeconfig file if in case we want to run the oc command on another cluster.
+                name: kubeconfig-dir
+                optional: true
+          duration: 10s
+          reason: Succeeded
+    workspaces:
+      - name: output
+  startTime: '2025-03-04T15:36:48Z'
